@@ -16,8 +16,14 @@
 		.default {
 			fill: steelblue;
 		}
-		.selected {
+		.selected1 {
+			fill: red;
+		}
+		.selected2 {
 			fill: greenyellow;
+		}
+		.definitive {
+			fill: darkorchid;
 		}
 	</style>
 
@@ -48,24 +54,46 @@
 
 		async function bubbleSort() {
 			var swapped = true;
+			let lastPos = data.length;
 			while(swapped) {
 				swapped = false;
-				for (let i = 0; i < data.length -1; ++i) {
+				let i;
+				for (i = 0; i < data.length -1; ++i) {
+					let dataFirstColor = data[i].color;
+					let dataSecondColor = data[i + 1].color;
+
+					changeColorColumn(i, "selected1");
+					changeColorColumn(i + 1, "selected1");
+
+					await sleep(150);
 					if (data[i].value > data[i + 1].value) {
+
 						swapped = true;
 						let tmp = data[i];
 						data[i] = data[i + 1];
 						data[i + 1] = tmp
 
-						changeColorColumn(i, "selected");
-						changeColorColumn(i + 1, "selected");
+						changeColorColumn(i, "selected2");
+						changeColorColumn(i + 1, "selected2");
 
-						await sleep(250);
+						await sleep(150);
 
 						changeColorColumn(i, "default");
 						changeColorColumn(i + 1, "default");
+
+						//await sleep(200);
+					} else {
+						changeColorColumn(i, dataFirstColor);
+						changeColorColumn(i + 1, dataSecondColor);
 					}
 				}
+				//TODO: PENSAR EN EL LILA PEL DEFINITIU
+				//lastPost
+				changeColorColumn(--lastPos, "definitive");
+			}
+			while(lastPos) {
+				changeColorColumn(--lastPos, "definitive");
+				await sleep(150);
 			}
 
 		}
