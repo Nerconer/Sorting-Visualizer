@@ -49,13 +49,19 @@
 		var heightSvg = 600;
 
 		var data;
-		var speed = 50;
+		var speed = 10;
 
 		function setSpeedAndSize(val) {
 			/*0 -> 10
 			50 -> 20
 			100 -> 30*/
-			speed = 100 - val;
+			if(val >= 0 && val < 33) {
+				speed = 50;
+			} else if(val >= 33 && val < 66) {
+				speed = 10;
+			} else {
+				speed = 1;
+			}
 			size = val;
 			if(size < 4) {
 				size = 4;
