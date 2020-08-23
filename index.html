@@ -29,19 +29,39 @@
 
 </head>
 
-<body onload="displayChart();">
-	<button type="button" onclick="newChart()">New chart</button>
-	<button type="button" onclick="bubbleSort()">Sort chart</button>
+<body onload="newChart();">
+	<header>
+		<button type="button" onclick="newChart()">New chart</button>
+		<label for="changeSpeed">Sorting speed & size</label>
+		<input type="range" min="0" max="100" id="changeSpeed" onInput="setSpeedAndSize(this.value);" style="background: white; cursor: pointer;">
+		<button type="button" onclick="bubbleSort()">Sort chart!</button>
+	</header>
+
+	<div id="svg"></div>
+
+	<footer>
+		<p>Made by David Solà - 2020</p>
+		<p>Version: 0.1.1</p>
+	</footer>
 
     <script>
-		var widthSvg = 960;
+		var widthSvg = 1200;
 		var heightSvg = 600;
 
-		data = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10));
-		data = data.map(elem => ({
-			value: elem,
-			color: "default"
-		}));
+		var data;
+		var speed = 50;
+
+		function setSpeedAndSize(val) {
+			/*0 -> 10
+			50 -> 20
+			100 -> 30*/
+			speed = 100 - val;
+			size = val;
+			if(size < 4) {
+				size = 4;
+			}
+			newChart(size);
+		}
 		
 		function sleep(ms) {
   			return new Promise(resolve => setTimeout(resolve, ms));
@@ -65,7 +85,7 @@
 					changeColorColumn(i, "selected1");
 					changeColorColumn(i + 1, "selected1");
 
-					await sleep(150);
+					await sleep(speed);
 					if (data[i].value > data[i + 1].value) {
 
 						swapped = true;
@@ -76,12 +96,12 @@
 						changeColorColumn(i, "selected2");
 						changeColorColumn(i + 1, "selected2");
 
-						await sleep(150);
+						await sleep(speed);
 
 						changeColorColumn(i, "default");
 						changeColorColumn(i + 1, "default");
 
-						//await sleep(200);
+						await sleep(speed);
 					} else {
 						changeColorColumn(i, dataFirstColor);
 						changeColorColumn(i + 1, dataSecondColor);
@@ -90,30 +110,29 @@
 				//TODO: PENSAR EN EL LILA PEL DEFINITIU
 				//lastPost
 				changeColorColumn(--lastPos, "definitive");
+				await sleep(speed);
 			}
 			while(lastPos) {
 				changeColorColumn(--lastPos, "definitive");
-				await sleep(150);
+				await sleep(speed);
 			}
 
 		}
 
-		function newChart() {
-			data = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10));
+		function newChart(length = 50) {
+			data = Array.from({ length: length }, () => Math.floor(Math.random() * 40));
 			data = data.map(elem => ({
 				value: elem,
 				color: "default"
 			}));
 
-			//data[2] = {value: 2, color: "selected"};
-			console.log(data);
 			displayChart();
 		}
 
 		function displayChart() {
 
 			d3.select("svg").remove(); 
-			var svg = d3.select("body").append("svg").attr("width", widthSvg).attr("height", heightSvg);
+			var svg = d3.select("#svg").append("svg").attr("width", widthSvg).attr("height", heightSvg);
 
 
 			var svg = d3.select("svg"),
@@ -126,9 +145,9 @@
 				.attr("x", 300)
 				.attr("y", 50)
 				.attr("font-size", "24px")
-				.text("Data Visualizer by David");
+				.text("Data Visualizer");
 
-			var xScale = d3.scaleBand().range([0, width]).padding(0.5),
+			var xScale = d3.scaleBand().range([0, width]).padding(0.2),
 				yScale = d3.scaleLinear().range([height, 0]);
 
 			xScale.domain(data.map(function(d, i) { return (i+1); }));
@@ -142,9 +161,9 @@
 				.call(d3.axisBottom(xScale));
 
 			g.append("g")
-				.call(d3.axisLeft(yScale).tickFormat(function(d){
-					return d.value;
-				}).ticks(4))
+				.call(d3.axisLeft(yScale).tickFormat(function(d) {
+					return d;
+				}).ticks(10))
 				.append("text")
 				.attr("y", 6)
 				.attr("dy", "0.71em")
