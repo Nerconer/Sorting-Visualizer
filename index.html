@@ -69,6 +69,7 @@
 					console.log(data);
 					let arrUnsorted = data;
 					data = await mergeSort(arrUnsorted);
+					arraySorted(data);
 					break;
 			}
 		}
@@ -153,6 +154,13 @@
 				}
 			});
 			return min;
+		}
+
+		function arraySorted(arr) {
+			arr.forEach((obj) => {
+				obj.color = "definitive"
+			});
+			displayChart();
 		}
 
 		async function mergeSort(arr) {
