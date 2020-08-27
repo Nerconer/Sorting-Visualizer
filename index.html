@@ -32,9 +32,13 @@
 <body onload="newChart();">
 	<header>
 		<button type="button" onclick="newChart()">New chart</button>
+		<select id="selectedSort" name="selectedSort">
+			<option value="bubbleSort">Bubble sort</option>
+			<option value="mergeSort" selected>Merge sort</option>
+		</select>
 		<label for="changeSpeed">Sorting speed & size</label>
 		<input type="range" min="0" max="100" id="changeSpeed" onInput="setSpeedAndSize(this.value);" style="background: white; cursor: pointer;">
-		<button type="button" onclick="bubbleSort()">Sort chart!</button>
+		<button type="button" onclick="sortChart()">Sort chart!</button>
 	</header>
 
 	<div id="svg"></div>
@@ -45,16 +49,31 @@
 	</footer>
 
     <script>
+		const sleep = m => new Promise(r => setTimeout(r, m));
+
 		var widthSvg = 1200;
 		var heightSvg = 600;
 
 		var data;
 		var speed = 10;
 
+		async function sortChart() {
+			let select = document.getElementById("selectedSort");
+			let selectedValue = select.options[select.selectedIndex].value;
+
+			switch (selectedValue) {
+				case "bubbleSort":
+					await bubbleSort();
+					break;
+				case "mergeSort":
+					console.log(data);
+					let arrUnsorted = data;
+					data = await mergeSort(arrUnsorted);
+					break;
+			}
+		}
+
 		function setSpeedAndSize(val) {
-			/*0 -> 10
-			50 -> 20
-			100 -> 30*/
 			if(val >= 0 && val < 33) {
 				speed = 50;
 			} else if(val >= 33 && val < 66) {
@@ -67,10 +86,6 @@
 				size = 4;
 			}
 			newChart(size);
-		}
-		
-		function sleep(ms) {
-  			return new Promise(resolve => setTimeout(resolve, ms));
 		}
 		
 		function changeColorColumn(index, color) {
@@ -113,8 +128,6 @@
 						changeColorColumn(i + 1, dataSecondColor);
 					}
 				}
-				//TODO: PENSAR EN EL LILA PEL DEFINITIU
-				//lastPost
 				changeColorColumn(--lastPos, "definitive");
 				await sleep(speed);
 			}
@@ -125,13 +138,102 @@
 
 		}
 
+		function updateArray(arr1, arr2, start) {
+			for(let i = 0; i < arr2.length; ++i) {
+				arr1[start + i] = arr2[i];
+			}
+			return arr1;
+		}
+
+		function findMin(arr) {
+			let min = arr[0].originalIndex;
+			arr.forEach((obj) => {
+				if(obj.originalIndex < min) {
+					min = obj.originalIndex
+				}
+			});
+			return min;
+		}
+
+		async function mergeSort(arr) {
+			if(arr.length <= 1) {
+				return arr;
+			}
+
+			let m = arr.length / 2;
+			let leftArr = arr.slice(0, m);
+			let rightArr = arr.slice(m, arr.length);
+
+			leftArr = await mergeSort(leftArr);
+			rightArr = await mergeSort(rightArr);
+
+			return (await merge(leftArr, rightArr));
+		}
+
+		async function merge(leftArr, rightArr) {
+			let result = [];
+			while(leftArr.length > 0 && rightArr.length > 0) {
+				if (leftArr[0].value <= rightArr[0].value) {
+					changeColorColumn(leftArr[0].originalIndex, "selected1");
+					await sleep(speed);
+					changeColorColumn(leftArr[0].originalIndex, "selected2");
+					await sleep(speed);
+					changeColorColumn(leftArr[0].originalIndex, "default");
+					await sleep(speed);
+
+					result.push(leftArr[0]);
+					leftArr.shift();
+				} else {
+					changeColorColumn(rightArr[0].originalIndex, "selected1");
+					await sleep(speed);
+					changeColorColumn(rightArr[0].originalIndex, "selected2");
+					await sleep(speed);
+					changeColorColumn(rightArr[0].originalIndex, "default");
+					await sleep(speed);
+
+					result.push(rightArr[0]);
+					rightArr.shift();
+				}
+			}
+
+			while (leftArr.length > 0) {
+				changeColorColumn(leftArr[0].originalIndex, "selected1");
+				await sleep(speed);
+				changeColorColumn(leftArr[0].originalIndex, "selected2");
+				await sleep(speed);
+				changeColorColumn(leftArr[0].originalIndex, "default");
+				await sleep(speed);
+
+				result.push(leftArr[0]);
+				leftArr.shift();
+			}
+
+			while (rightArr.length > 0) {
+				changeColorColumn(rightArr[0].originalIndex, "selected1");
+				await sleep(speed);
+				changeColorColumn(rightArr[0].originalIndex, "selected2");
+				await sleep(speed);
+				changeColorColumn(rightArr[0].originalIndex, "default");
+				await sleep(speed);
+
+				result.push(rightArr[0]);
+				rightArr.shift();
+			}
+
+			data = updateArray(data, result, findMin(result));
+			displayChart();
+
+			return result;
+		}
+
+
 		function newChart(length = 50) {
 			data = Array.from({ length: length }, () => Math.floor(Math.random() * 40));
-			data = data.map(elem => ({
+			data = data.map((elem, index) => ({
 				value: elem,
-				color: "default"
+				color: "default",
+				originalIndex: index
 			}));
-
 			displayChart();
 		}
 
